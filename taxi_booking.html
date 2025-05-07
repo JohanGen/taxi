@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Northern Cyprus Taxi</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous" />
+
+  <style>
+    body { font-family: system-ui, sans-serif; background:#f0f9ff; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; }
+    .card { background:#fff; padding:2rem; border-radius:1rem; box-shadow:0 10px 25px rgba(0,0,0,.1); width:100%; max-width:480px; }
+    h1 { margin:0 0 1.25rem; font-size:1.6rem; text-align:center; }
+    label { font-weight:600; display:block; margin-bottom:0.25rem; }
+    select,input { width:100%; padding:0.5rem 0.75rem; border:1px solid #ccc; border-radius:0.5rem; margin-bottom:1rem; font-size:1rem; }
+    #lang { margin-bottom:1.25rem; }
+    #map { height:340px; margin-bottom:1rem; border-radius:0.5rem; }
+    button { width:100%; padding:0.75rem; font-size:1rem; border:none; border-radius:0.5rem; color:#fff; background:#1e90ff; cursor:pointer; transition:background .2s; }
+    button:hover { background:#0077e6; }
+    .hidden { display:none; }
+    .success { text-align:center; font-size:1.1rem; margin-bottom:1rem; }
+    .btn-group { display:flex; gap:0.5rem; }
+    .btn-secondary,.btn-error { flex:1; border:none; border-radius:0.5rem; padding:0.6rem; color:#fff; cursor:pointer; }
+    .btn-secondary { background:#64748b; }
+    .btn-error { background:#dc2626; }
+    /* =========== ADD: tiny loading spinner =========== */
+.input-wrap {
+  position: relative;
+}
+
+.spinner {
+  position: absolute;
+  right: 10px;           /* just inside the input box */
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border: 3px solid transparent;
+  border-top: 3px solid #1e90ff; /* same blue as button */
+  border-radius: 50%;
+  transform: translateY(-50%);
+  animation: spin .8s linear infinite;
+  display: none;         /* hidden until fetch starts */
+}
+
+@keyframes spin {
+  0%   { transform: translateY(-50%) rotate(0deg); }
+  100% { transform: translateY(-50%) rotate(360deg); }
+}
+/* =========== END ADD ============================= */
+
+  </style>
+</head>
+<body>
+  <!-- BOOKING CARD -->
+  <div class="card" id="form-card">
+    <h1 id="title">Northern Cyprus Taxi</h1>
+    <select id="lang">
+      <option value="en">English</option>
+      <option value="tr">Türkçe</option>
+      <option value="ru">Русский</option>
+      <option value="el">Ελληνικά</option>
+    </select>
+
+    <form id="booking-form" autocomplete="off">
+      <label id="name-label" for="name">Name<span style="color:#e11d48">*</span></label>
+      <input id="name" autocomplete="name" required />
+
+      <label id="phone-label" for="phone">Phone Number<span style="color:#e11d48">*</span></label>
+      <input id="phone" type="tel" autocomplete="tel" pattern="\+\d[\d\s-]{6,}" placeholder="e.g. +90 533 123 4567" required />
+
+      <label id="pickup-label" for="pickup">Pickup Location<span style="color:#e11d48">*</span></label>
+      <input id="pickup" list="pickup-list" required />
+      <datalist id="pickup-list"></datalist>
+
+      <label id="drop-label" for="drop">Destination<span style="color:#e11d48">*</span></label>
+      <input id="drop" list="drop-list" required />
+      <datalist id="drop-list"></datalist>
+
+      <div id="map"></div>
+
+      <label id="date-label" for="datetime">Date & Time</label>
+      <input id="datetime" type="datetime-local" />
+
+      <button id="book-btn" type="submit">Book Taxi</button>
+    </form>
+  </div>
+
+  <!-- SUCCESS CARD -->
+  <div class="card hidden" id="success-card">
+    <h1 id="confirmed-title">Booking Confirmed 🎉</h1>
+    <p class="success" id="summary"></p>
+    <div class="btn-group">
+      <button class="btn-secondary" id="edit-btn">Edit</button>
+      <button class="btn-error" id="new-btn">New Booking</button>
+    </div>
+  </div>
+
+  <!-- Leaflet -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
+
+  <script>
+    /********** TRANSLATIONS **********/
+    const translations = {
+      en:{ title:'Northern Cyprus Taxi', nameLabel:'Name', phoneLabel:'Phone Number', pickupLabel:'Pickup Location', dropLabel:'Destination', dateLabel:'Date & Time', bookBtn:'Book Taxi', confirmedTitle:'Booking Confirmed 🎉', when:'When', from:'From', to:'To', editBtn:'Edit', newBtn:'New Booking', fillAlert:'Please fill in name and phone', selectAlert:'Please select pickup and destination', routeAlert:'Could not fetch route' },
+      tr:{ title:'Kuzey Kıbrıs Taksi', nameLabel:'Ad', phoneLabel:'Telefon Numarası', pickupLabel:'Alınış Yeri', dropLabel:'Gidilecek Yer', dateLabel:'Tarih & Saat', bookBtn:'Taksi Rezervasyonu', confirmedTitle:'Rezervasyon Onaylandı 🎉', when:'Ne zaman', from:'Nereden', to:'Nereye', editBtn:'Düzenle', newBtn:'Yeni Rezervasyon', fillAlert:'Lütfen ad ve telefon girin', selectAlert:'Lütfen alınış ve varış noktalarını seçin', routeAlert:'Rota getirilemedi' },
+      ru:{ title:'Такси Северного Кипра', nameLabel:'Имя', phoneLabel:'Номер телефона', pickupLabel:'Место посадки', dropLabel:'Пункт назначения', dateLabel:'Дата и время', bookBtn:'Заказать такси', confirmedTitle:'Бронирование подтверждено 🎉', when:'Когда', from:'Откуда', to:'Куда', editBtn:'Изменить', newBtn:'Новый заказ', fillAlert:'Введите имя и телефон', selectAlert:'Выберите места посадки и назначения', routeAlert:'Не удалось построить маршрут' },
+      el:{ title:'Ταξί Βόρειας Κύπρου', nameLabel:'Όνομα', phoneLabel:'Αριθμός τηλεφώνου', pickupLabel:'Σημείο παραλαβής', dropLabel:'Προορισμός', dateLabel:'Ημερομηνία & Ώρα', bookBtn:'Κράτηση ταξί', confirmedTitle:'Η κράτηση επιβεβαιώθηκε 🎉', when:'Πότε', from:'Από', to:'Προς', editBtn:'Επεξεργασία', newBtn:'Νέα κράτηση', fillAlert:'Εισαγάγετε όνομα και τηλέφωνο', selectAlert:'Επιλέξτε παραλαβή και προορισμό', routeAlert:'Δεν βρέθηκε διαδρομή' }
+    };
+
+    let lang='en';
+    const langSelect=document.getElementById('lang');
+    langSelect.addEventListener('change', e=> setLang(e.target.value));
+
+    function setLang(l){
+      lang=l; langSelect.value=l;
+      const L=translations[l];
+      document.getElementById('title').textContent=L.title;
+      document.getElementById('name-label').textContent=L.nameLabel;
+      document.getElementById('phone-label').textContent=L.phoneLabel;
+      document.getElementById('pickup-label').textContent=L.pickupLabel;
+      document.getElementById('drop-label').textContent=L.dropLabel;
+      document.getElementById('date-label').textContent=L.dateLabel;
+      document.getElementById('book-btn').textContent=L.bookBtn;
+      document.getElementById('confirmed-title').textContent=L.confirmedTitle;
+      document.getElementById('edit-btn').textContent=L.editBtn;
+      document.getElementById('new-btn').textContent=L.newBtn;
+      document.getElementById('pickup').placeholder=L.pickupLabel;
+      document.getElementById('drop').placeholder=L.dropLabel;
+    }
+    setLang('en');
+
+    /********** MAP **********/
+    const map=L.map('map').setView([35.2649,33.177],9);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19, attribution:'© OpenStreetMap contributors'}).addTo(map);
+
+    const shadow='https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png';
+    const icons={
+      pickup:new L.Icon({iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png', shadowUrl:shadow, iconSize:[25,41], iconAnchor:[12,41]}),
+      drop:new L.Icon({iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png', shadowUrl:shadow, iconSize:[25,41], iconAnchor:[12,41]})
+    };
+    const state={ pickup:null, drop:null, markers:{}, route:null };
+
+    /********** AUTOCOMPLETE **********/
+    async function search(q){ if(!q.trim()) return []; const url=`https://nominatim.openstreetmap.org/search?format=json&limit=5&addressdetails=1&q=${encodeURIComponent(q)}`; const res=await fetch(url,{headers:{'Accept-Language':lang}}); return res.ok? res.json():[]; }
+    function renderOptions(list,items){ list.innerHTML=items.map(i=>`<option data-lat="${i.lat}" data-lon="${i.lon}" value="${i.display_name.replace(/"/g,'&quot;')}"></option>`).join(''); }
+    const pickupInput=document.getElementById('pickup'), pickupList=document.getElementById('pickup-list');
+    const dropInput=document.getElementById('drop'), dropList=document.getElementById('drop-list');
+    pickupInput.addEventListener('input', async e=> renderOptions(pickupList, await search(e.target.value)));
+    dropInput.addEventListener('input', async e=> renderOptions(dropList, await search(e.target.value)));
+    function selectPlace(type,opt){ const lat=+opt.dataset.lat, lon=+opt.dataset.lon, name=opt.value; if(state.markers[type]) map.removeLayer(state.markers[type]); state.markers[type]=L.marker([lat,lon],{icon:icons[type]}).addTo(map); state[type]={name, coords:[lon,lat]}; map.setView([lat,lon],13); if(state.pickup&&state.drop) drawRoute(); }
+    pickupInput.addEventListener('change',()=>{ const opt=[...pickupList.options].find(o=>o.value===pickupInput.value); if(opt) selectPlace('pickup',opt); });
+    dropInput.addEventListener('change',()=>{ const opt=[...dropList.options].find(o=>o.value===dropInput.value); if(opt) selectPlace('drop',opt); });
+
+    /********** ROUTE **********/
+    async function drawRoute(){ if(state.route){ map.removeLayer(state.route); state.route=null; } try{ const [lon1,lat1]=state.pickup.coords,[lon2,lat2]=state.drop.coords; const data=await (await fetch(`https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`)).json(); if(data.code!=='Ok') throw 0; const line=data.routes[0].geometry.coordinates.map(([lng,lat])=>[lat,lng]); state.route=L.polyline(line,{weight:4,opacity:0.8}).addTo(map); map.fitBounds(state.route.getBounds(),{padding:[30,30]}); }catch(e){ alert(translations[lang].routeAlert); } }
+
+    /********** FORM **********/
+    const form=document.getElementById('booking-form');
+    const formCard=document.getElementById('form-card');
+    const successCard=document.getElementById('success-card');
+    const summary=document.getElementById('summary');
+    const editBtn=document.getElementById('edit-btn');
+    const newBtn=document.getElementById('new-btn');
+
+    form.addEventListener('submit',e=>{ e.preventDefault(); const L=translations[lang]; const name=document.getElementById('name').value.trim(); const phone=document.getElementById('phone').value.trim(); const dt=document.getElementById('datetime').value; if(!name||!phone){ alert(L.fillAlert); return;} if(!state.pickup||!state.drop){ alert(L.selectAlert); return;} summary.innerHTML=`<strong>${L.when}:</strong> ${dt||'ASAP'}<br><strong>${L.from}:</strong> ${state.pickup.name}<br><strong>${L.to}:</strong> ${state.drop.name}`; formCard.classList.add('hidden'); successCard.classList.remove('hidden'); });
+    editBtn.addEventListener('click',()=>{ successCard.classList.add('hidden'); formCard.classList.remove('hidden'); });
+    newBtn.addEventListener('click',()=>{ form.reset(); pickupList.innerHTML=dropList.innerHTML=''; if(state.route) map.removeLayer(state.route); Object.values(state.markers).forEach(m=> m&&map.removeLayer(m)); Object.assign(state,{pickup:null,drop:null,markers:{},route:null}); map.setView([35.2649,33.177],9); successCard.classList.add('hidden'); formCard.classList.remove('hidden'); });
+  </script>
+</body>
+</html>
