@@ -152,10 +152,10 @@
     pickupInput.addEventListener('change',()=>{ const opt=[...pickupList.options].find(o=>o.value===pickupInput.value); if(opt) selectPlace('pickup',opt); });
     dropInput.addEventListener('change',()=>{ const opt=[...dropList.options].find(o=>o.value===dropInput.value); if(opt) selectPlace('drop',opt); });
 
-    /********** ROUTE **********/
+    /********** ROUTEs **********/
     async function drawRoute(){ if(state.route){ map.removeLayer(state.route); state.route=null; } try{ const [lon1,lat1]=state.pickup.coords,[lon2,lat2]=state.drop.coords; const data=await (await fetch(`https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`)).json(); if(data.code!=='Ok') throw 0; const line=data.routes[0].geometry.coordinates.map(([lng,lat])=>[lat,lng]); state.route=L.polyline(line,{weight:4,opacity:0.8}).addTo(map); map.fitBounds(state.route.getBounds(),{padding:[30,30]}); }catch(e){ alert(translations[lang].routeAlert); } }
 
-    /********** FORM **********/
+    /********** FORMs **********/
     const form=document.getElementById('booking-form');
     const formCard=document.getElementById('form-card');
     const successCard=document.getElementById('success-card');
