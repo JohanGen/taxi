@@ -541,8 +541,12 @@
         selectedDateTime = picker.value;                       // ISO string
         const date = new Date(selectedDateTime);
         $('calendar-display').textContent = date.toLocaleString(lang,{
-          year:'numeric', month:'short', day:'numeric',
-          hour:'2-digit', minute:'2-digit'
+          year:'numeric', 
+          month:'short', 
+          day:'numeric',
+          hour:'2-digit', 
+          minute:'2-digit',
+          hour12: false
         });
         picker.remove();
       });
