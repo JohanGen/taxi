@@ -16,7 +16,7 @@
       --text:#ffffff;
     }
     /* --------- global layout --------- */
-    body{font-family:"Poppins",system-ui,sans-serif;background:var(--page-bg);display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;color:var(--text);}
+    body{font-family:"Poppins",system-ui,sans-serif;background: url('light-background.jpg') no-repeat center center fixed;background-size: cover;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;color:var(--text);}
     .card{background:var(--card-bg);padding:2rem;border-radius:1rem;box-shadow:0 10px 40px rgba(0,0,0,.7);width:100%;max-width:480px}
     h1{margin:0 0 1.25rem;text-align:center;font-size:2rem;font-weight:700}
     .gold{text-transform:uppercase;background:linear-gradient(90deg,var(--gold-1),var(--gold-2));-webkit-background-clip:text;background-clip:text;color:transparent;}
@@ -31,10 +31,59 @@
     .btn-group{display:flex;gap:.5rem}
     .btn-secondary,.btn-error{flex:1;border:none;border-radius:.5rem;padding:.6rem;font-weight:600;color:#000;background:var(--gold-1);cursor:pointer}
     .btn-error{background:#dc2626;color:#fff}
+    
+    /* Improved autocomplete styling */
+    .autocomplete-container {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+    .autocomplete-container label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .autocomplete-container label .lazy-type-badge {
+      background: linear-gradient(90deg,var(--gold-1),var(--gold-2));
+      color: #000;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 1rem;
+      margin-left: 0.5rem;
+      font-weight: bold;
+    }
+    .autocomplete-input {
+      position: relative;
+    }
+    
     /* spinner */
-    .input-wrap{position:relative}
-    .spinner{position:absolute;right:10px;top:50%;width:18px;height:18px;border:3px solid transparent;border-top:3px solid var(--gold-1);border-radius:50%;transform:translateY(-50%);animation:spin .8s linear infinite;display:none}
+    .spinner{position:absolute;right:10px;top:20px;width:18px;height:18px;border:3px solid transparent;border-top:3px solid var(--gold-1);border-radius:50%;transform:translateY(-50%);animation:spin .8s linear infinite;display:none}
     @keyframes spin{0%{transform:translateY(-50%) rotate(0)}100%{transform:translateY(-50%) rotate(360deg)}}
+    
+    /* Map controls */
+    .map-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .map-controls button {
+      flex: 1;
+      padding: 0.5rem;
+      font-size: 0.9rem;
+    }
+    
+    /* Calendar button */
+    .calendar-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .calendar-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: #000;
+    }
   </style>
 </head>
 <body>
@@ -57,25 +106,43 @@
       <input id="phone" type="tel" pattern="\+\d[\d\s-]{6,}" placeholder="+90 533 123 4567" required />
 
       <!-- PICKUP -->
-      <label id="pickup-label" for="pickup">Pickup Location<span style="color:#e11d48">*</span></label>
-      <div class="input-wrap">
-        <input id="pickup" list="pickup-list" required />
-        <div class="spinner" id="spin-pick"></div>
+      <div class="autocomplete-container">
+        <label id="pickup-label" for="pickup">
+          Pickup Location<span style="color:#e11d48">*</span>
+        </label>
+        <div class="autocomplete-input">
+          <input id="pickup" list="pickup-list" required placeholder="Start typing to see suggestions" />
+          <div class="spinner" id="spin-pick"></div>
+        </div>
+        <datalist id="pickup-list"></datalist>
       </div>
-      <datalist id="pickup-list"></datalist>
 
       <!-- DESTINATION -->
-      <label id="drop-label" for="drop">Destination<span style="color:#e11d48">*</span></label>
-      <div class="input-wrap">
-        <input id="drop" list="drop-list" required />
-        <div class="spinner" id="spin-drop"></div>
+      <div class="autocomplete-container">
+        <label id="drop-label" for="drop">
+          Destination<span style="color:#e11d48">*</span>
+        </label>
+        <div class="autocomplete-input">
+          <input id="drop" list="drop-list" required placeholder="Start typing to see suggestions" />
+          <div class="spinner" id="spin-drop"></div>
+        </div>
+        <datalist id="drop-list"></datalist>
       </div>
-      <datalist id="drop-list"></datalist>
 
+      <div class="map-controls">
+        <button type="button" id="current-location-btn">Use Current Location</button>
+        <button type="button" id="clear-markers-btn">Clear Markers</button>
+      </div>
+      
       <div id="map"></div>
 
-      <label id="date-label" for="datetime">Date &amp; Time</label>
-      <input id="datetime" type="datetime-local" />
+      <!-- Calendar Button -->
+      <button type="button" id="calendar-btn" class="calendar-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
+        </svg>
+        Select Date & Time
+      </button>
 
       <button id="book-btn" type="submit">Book Now</button>
     </form>
@@ -95,36 +162,450 @@
 
   <script>
     /* ---- translations (only titles updated for brevity) ---- */
-    const translations={en:{title:'VIP Tour Travels',confirmedTitle:'Booking Confirmed',when:'When',from:'From',to:'To',fill:'Please fill in name and phone',select:'Please select pickup and destination',route:'Could not fetch route'}};
-    let lang='en'; const $=id=>document.getElementById(id);
+    /* ---- Complete translations ---- */
+    const translations = {
+      en: {
+        confirmedTitle: 'Booking Confirmed',
+        nameLabel: 'Name',
+        phoneLabel: 'Phone Number',
+        pickupLabel: 'Pickup Location',
+        dropLabel: 'Destination',
+        when: 'When',
+        from: 'From',
+        to: 'To',
+        fill: 'Please fill in name and phone',
+        select: 'Please select pickup and destination',
+        route: 'Could not fetch route',
+        currentLocation: 'Use Current Location',
+        clearMarkers: 'Clear Markers',
+        selectDateTime: 'Select Date & Time',
+        asap: 'ASAP',
+        bookNow: 'Book Now',
+        edit: 'Edit',
+        newBooking: 'New Booking'
+      },
+      tr: {
+        confirmedTitle: 'Rezervasyon Onaylandı',
+        nameLabel: 'Ad',
+        phoneLabel: 'Telefon Numarası',
+        pickupLabel: 'Alış Noktası',
+        dropLabel: 'Varış Noktası',
+        when: 'Ne Zaman',
+        from: 'Nereden',
+        to: 'Nereye',
+        fill: 'Lütfen ad ve telefon bilgilerini doldurun',
+        select: 'Lütfen alış ve varış noktalarını seçin',
+        route: 'Rota alınamadı',
+        currentLocation: 'Mevcut Konumu Kullan',
+        clearMarkers: 'İşaretçileri Temizle',
+        selectDateTime: 'Tarih & Saat Seçin',
+        asap: 'EN KISA SÜREDE',
+        bookNow: 'Şimdi Rezerve Et',
+        edit: 'Düzenle',
+        newBooking: 'Yeni Rezervasyon'
+      },
+      ru: {
+        confirmedTitle: 'Бронирование Подтверждено',
+        nameLabel: 'Имя',
+        phoneLabel: 'Номер телефона',
+        pickupLabel: 'Место отправления',
+        dropLabel: 'Место назначения',
+        when: 'Когда',
+        from: 'Откуда',
+        to: 'Куда',
+        fill: 'Пожалуйста, заполните имя и телефон',
+        select: 'Пожалуйста, выберите места отправки и назначения',
+        route: 'Не удалось построить маршрут',
+        currentLocation: 'Использовать текущее местоположение',
+        clearMarkers: 'Очистить маркеры',
+        selectDateTime: 'Выбрать дату и время',
+        asap: 'КАК МОЖНО СКОРЕЕ',
+        bookNow: 'Забронировать',
+        edit: 'Редактировать',
+        newBooking: 'Новое бронирование'
+      },
+      el: {
+        confirmedTitle: 'Η Κράτηση Επιβεβαιώθηκε',
+        nameLabel: 'Όνομα',
+        phoneLabel: 'Τηλέφωνο',
+        pickupLabel: 'Σημείο Αναχώρησης',
+        dropLabel: 'Προορισμός',
+        when: 'Πότε',
+        from: 'Από',
+        to: 'Προς',
+        fill: 'Συμπληρώστε το όνομα και το τηλέφωνο',
+        select: 'Επιλέξτε σημείο αναχώρησης και προορισμό',
+        route: 'Δεν ήταν δυνατή η εύρεση διαδρομής',
+        currentLocation: 'Χρήση τρέχουσας τοποθεσίας',
+        clearMarkers: 'Καθαρισμός δεικτών',
+        selectDateTime: 'Επιλέξτε ημερομηνία & ώρα',
+        asap: 'ΟΣΟ ΠΙΟ ΣΥΝΤΟΜΑ ΓΙΝΕΤΑΙ',
+        bookNow: 'Κάντε Κράτηση',
+        edit: 'Επεξεργασία',
+        newBooking: 'Νέα Κράτηση'
+      }
+    };
+    
+    let lang='en'; 
+    const $=id=>document.getElementById(id);
+    let selectedDateTime = null;
 
     /* ---- map ---- */
-    const map=L.map('map').setView([35.2649,33.177],9);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+    // Focus on Northern Cyprus with appropriate bounds
+    const northernCyprusBounds = L.latLngBounds(
+      L.latLng(34.9, 32.0), // SW corner
+      L.latLng(35.9, 34.9)  // NE corner
+    );
+    
+    const map=L.map('map', {
+      maxBounds: northernCyprusBounds,
+      maxBoundsViscosity: 1.0 // Strict bounds enforcement
+    }).setView([35.2649, 33.177], 9);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      maxZoom:19,
+      attribution:'© OpenStreetMap'
+    }).addTo(map);
+    
     const shadow='https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png';
-    const icons={pickup:new L.Icon({iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',shadowUrl:shadow,iconSize:[25,41],iconAnchor:[12,41]}),drop:new L.Icon({iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',shadowUrl:shadow,iconSize:[25,41],iconAnchor:[12,41]})};
-    const state={pickup:null,drop:null,markers:{},route:null};
+    const icons={
+      pickup:new L.Icon({
+        iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+        shadowUrl:shadow,
+        iconSize:[25,41],
+        iconAnchor:[12,41]
+      }),
+      drop:new L.Icon({
+        iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+        shadowUrl:shadow,
+        iconSize:[25,41],
+        iconAnchor:[12,41]
+      })
+    };
+    
+    const state={
+      pickup:null,
+      drop:null,
+      markers:{},
+      route:null
+    };
 
-    /* ---- autocomplete ---- */
-    const spinPick=$('spin-pick'),spinDrop=$('spin-drop');
-    const pIn=$('pickup'),pList=$('pickup-list');
-    const dIn=$('drop'),  dList=$('drop-list');
-    async function search(q){if(!q.trim())return[];const url=`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(q)}`;return fetch(url).then(r=>r.json())}
-    function render(list,data){list.innerHTML=data.map(i=>`<option data-lat="${i.lat}" data-lon="${i.lon}" value="${i.display_name.replace(/"/g,'&quot;')}"></option>`).join('');}
-    pIn.addEventListener('input',async e=>{spinPick.style.display='block';render(pList,await search(e.target.value));spinPick.style.display='none';});
-    dIn.addEventListener('input',async e=>{spinDrop.style.display='block';render(dList,await search(e.target.value));spinDrop.style.display='none';});
-    function choose(t,opt){const lat=+opt.dataset.lat,lon=+opt.dataset.lon,name=opt.value;if(state.markers[t])map.removeLayer(state.markers[t]);state.markers[t]=L.marker([lat,lon],{icon:icons[t]}).addTo(map);state[t]={name,coords:[lon,lat]};map.setView([lat,lon],13);if(state.pickup&&state.drop) route();}
-    pIn.addEventListener('change',()=>{const opt=[...pList.options].find(o=>o.value===pIn.value);if(opt)choose('pickup',opt);});
-    dIn.addEventListener('change',()=>{const opt=[...dList.options].find(o=>o.value===dIn.value);if(opt)choose('drop',opt);});
+    /* ---- Update all text elements when language changes ---- */
+    function updateLanguage() {
+      const L = translations[lang];
+      
+      // Update form elements
+      $('name-label').innerHTML = `${L.nameLabel}<span style="color:#e11d48">*</span>`;
+      $('phone-label').innerHTML = `${L.phoneLabel}<span style="color:#e11d48">*</span>`;
+      $('pickup-label').innerHTML = `${L.pickupLabel}<span style="color:#e11d48">*</span>`;
+      $('drop-label').innerHTML = `${L.dropLabel}<span style="color:#e11d48">*</span>`;
+      
+      // Update buttons
+      $('current-location-btn').textContent = L.currentLocation;
+      $('clear-markers-btn').textContent = L.clearMarkers;
+      $('calendar-btn').textContent = L.selectDateTime;   // use the real id
+      $('book-btn').textContent = L.bookNow;
+      $('edit-btn').textContent = L.edit;
+      $('new-btn').textContent = L.newBooking;
+      
+      // Update placeholders
+      $('pickup').placeholder = L.select;
+      $('drop').placeholder = L.select;
+    }
 
-    async function route(){if(state.route){map.removeLayer(state.route);}const [lon1,lat1]=state.pickup.coords,[lon2,lat2]=state.drop.coords;const url=`https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`;const data=await fetch(url).then(r=>r.json());if(data.code!=='Ok')return alert(translations[lang].route);const line=data.routes[0].geometry.coordinates.map(([x,y])=>[y,x]);state.route=L.polyline(line,{weight:4,opacity:.8}).addTo(map);map.fitBounds(state.route.getBounds(),{padding:[30,30]});}
+    /* ---- Language change handler ---- */
+    $('lang').addEventListener('change', function() {
+      lang = this.value;
+      updateLanguage();
+    });
+
+    /* ---- Initialize with English ---- */
+    updateLanguage();
+
+    /* ---- autocomplete (debounced, with error handling) ---- */
+    const spinPick = $('spin-pick'), spinDrop = $('spin-drop');
+    const pIn = $('pickup'), pList = $('pickup-list');
+    const dIn = $('drop'),   dList = $('drop-list');
+
+    /* helper */
+    function render(list, items){
+      // Filter to only show results within Northern Cyprus bounds
+      const filteredItems = items.filter(item => {
+        const lat = parseFloat(item.lat);
+        const lon = parseFloat(item.lon);
+        return northernCyprusBounds.contains(L.latLng(lat, lon));
+      });
+      
+      list.innerHTML = filteredItems.map(i =>
+        `<option data-lat="${i.lat}" data-lon="${i.lon}" ` +
+        `value="${i.display_name.replace(/\"/g,'&quot;')}"></option>`
+      ).join('');
+    }
+
+    async function search(q){
+      if(!q.trim()) return [];
+      
+      // Add Northern Cyprus to the query to prioritize local results
+      const query = `${q}, Northern Cyprus`;
+      
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&addressdetails=1&q=${encodeURIComponent(query)}`;
+      
+      try{
+        const res = await fetch(url, { 
+          headers: { 
+            'Accept-Language': lang,
+            'Referrer-Policy': 'no-referrer-when-downgrade'
+          } 
+        });
+        if(!res.ok) return [];           // avoid throwing on 429, 5xx
+        return await res.json();
+      }catch(e){
+        console.error('autocomplete error', e);
+        return [];
+      }
+    }
+
+    /* debounce helpers */
+    function debounce(fn,delay=300){
+      let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args),delay); };
+    }
+
+    const handlePickup = debounce(async q=>{
+      spinPick.style.display='block';
+      render(pList, await search(q));
+      spinPick.style.display='none';
+    });
+    
+    const handleDrop = debounce(async q=>{
+      spinDrop.style.display='block';
+      render(dList, await search(q));
+      spinDrop.style.display='none';
+    });
+
+    pIn.addEventListener('input', e => handlePickup(e.target.value));
+    dIn.addEventListener('input', e => handleDrop(e.target.value));
+
+    /* choose option + route */
+    function choose(type,opt){
+      const lat = +opt.dataset.lat, lon = +opt.dataset.lon, name = opt.value;
+      if(state.markers[type]) map.removeLayer(state.markers[type]);
+      state.markers[type] = L.marker([lat,lon],{icon:icons[type]}).addTo(map);
+      state[type] = { name, coords:[lon,lat] };
+      map.setView([lat,lon],13);
+      if(state.pickup && state.drop) drawRoute();
+    }
+    
+    pIn.addEventListener('change',()=>{
+      const opt=[...pList.options].find(o=>o.value===pIn.value);
+      if(opt) choose('pickup',opt);
+    });
+    
+    dIn.addEventListener('change',()=>{
+      const opt=[...dList.options].find(o=>o.value===dIn.value);
+      if(opt) choose('drop',opt);
+    });
+
+    /* ---- route drawing ---- */
+    async function drawRoute(){
+      if(state.route) map.removeLayer(state.route);
+      
+      try {
+        const response = await fetch(
+          `https://router.project-osrm.org/route/v1/driving/${state.pickup.coords.join(',')};${state.drop.coords.join(',')}?overview=full&geometries=geojson`
+        );
+        
+        const data = await response.json();
+        
+        if(data.routes && data.routes.length){
+          const route = data.routes[0];
+          state.route = L.geoJSON({
+            type: 'Feature',
+            properties: {},
+            geometry: route.geometry
+          }, {
+            style: {
+              color: '#1e90ff',
+              weight: 4,
+              opacity: 0.8
+            }
+          }).addTo(map);
+          
+          // Fit map to route bounds
+          const bounds = state.route.getBounds();
+          map.fitBounds(bounds.pad(0.2));
+        }
+      } catch(e) {
+        console.error('Route error:', e);
+        alert(translations[lang].route);
+      }
+    }
+
+    /* ---- current location ---- */
+    $('current-location-btn').addEventListener('click', function() {
+      if(navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            // Check if location is within Northern Cyprus
+            if(!northernCyprusBounds.contains(L.latLng(lat, lon))) {
+              alert('You appear to be outside Northern Cyprus. Please select a location manually.');
+              return;
+            }
+            
+            // Reverse geocode to get address
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+              .then(res => res.json())
+              .then(data => {
+                if(data.display_name) {
+                  pIn.value = data.display_name;
+                  if(state.markers.pickup) map.removeLayer(state.markers.pickup);
+                  state.markers.pickup = L.marker([lat, lon], {icon: icons.pickup}).addTo(map);
+                  state.pickup = { name: data.display_name, coords: [lon, lat] };
+                  map.setView([lat, lon], 15);
+                }
+              });
+          },
+          function(error) {
+            alert('Unable to get your location: ' + error.message);
+          },
+          { timeout: 10000 }
+        );
+      } else {
+        alert('Geolocation is not supported by your browser');
+      }
+    });
+
+    /* ---- clear markers ---- */
+    $('clear-markers-btn').addEventListener('click', function() {
+      if(state.markers.pickup) {
+        map.removeLayer(state.markers.pickup);
+        delete state.markers.pickup;
+        state.pickup = null;
+        pIn.value = '';
+      }
+      if(state.markers.drop) {
+        map.removeLayer(state.markers.drop);
+        delete state.markers.drop;
+        state.drop = null;
+        dIn.value = '';
+      }
+      if(state.route) {
+        map.removeLayer(state.route);
+        state.route = null;
+      }
+      map.setView([35.2649, 33.177], 9);
+    });
+
+    /* ---- calendar button (fixed) ---- */
+    $('calendar-btn').addEventListener('click', () => {
+      const picker = document.createElement('input');
+      picker.type  = 'datetime-local';
+
+      /* put it off‑screen but ABOVE every layer */
+      picker.style.position   = 'fixed';
+      picker.style.top        = '-1000px';
+      picker.style.opacity    = '0';
+      picker.style.zIndex     = '2147483647';   // max z‑index
+      // allow focus so the native widget stays open
+      // (NO pointerEvents = 'none' !)
+
+      /* min = now */
+      picker.min = new Date().toISOString().slice(0,16);  // "YYYY‑MM‑DDTHH:MM"
+
+      document.body.appendChild(picker);
+
+      /* open the native picker */
+      if (picker.showPicker) {           // Chrome / Edge
+        picker.showPicker();
+      } else {                           // Firefox
+        picker.focus();
+        picker.click();
+      }
+
+      /* user picked a value */
+      picker.addEventListener('change', () => {
+        selectedDateTime = picker.value;                       // ISO string
+        const date = new Date(selectedDateTime);
+        $('calendar-label').textContent = date.toLocaleString(lang,{
+          year:'numeric', month:'short', day:'numeric',
+          hour:'2-digit', minute:'2-digit'
+        });
+        picker.remove();
+      });
+
+      /* user dismissed the dialog */
+      picker.addEventListener('blur', () => {
+        if (!selectedDateTime) picker.remove();
+      });
+    });
+
 
     /* ---- form ---- */
     const form=$('booking-form'),formCard=$('form-card'),succ=$('success-card'),summary=$('summary');
     $('book-btn').textContent='Book Now';
-    form.addEventListener('submit',e=>{e.preventDefault();const name=$('name').value.trim(),phone=$('phone').value.trim(),dt=$('datetime').value;const L=translations[lang];if(!name||!phone)return alert(L.fill);if(!state.pickup||!state.drop)return alert(L.select);summary.innerHTML=`<strong>${L.when}:</strong> ${dt||'ASAP'}<br><strong>${L.from}:</strong> ${state.pickup.name}<br><strong>${L.to}:</strong> ${state.drop.name}`;formCard.classList.add('hidden');succ.classList.remove('hidden');});
-    $('edit-btn').onclick=()=>{succ.classList.add('hidden');formCard.classList.remove('hidden');};
-    $('new-btn').onclick=()=>{form.reset();pList.innerHTML=dList.innerHTML='';Object.values(state.markers).forEach(m=>m&&map.removeLayer(m));if(state.route)map.removeLayer(state.route);Object.assign(state,{pickup:null,drop:null,markers:{},route:null});map.setView([35.2649,33.177],9);succ.classList.add('hidden');formCard.classList.remove('hidden');};
+    
+    form.addEventListener('submit',e=>{
+      e.preventDefault();
+      const name=$('name').value.trim(),
+            phone=$('phone').value.trim();
+      const L=translations[lang];
+      
+      if(!name||!phone) return alert(L.fill);
+      if(!state.pickup||!state.drop) return alert(L.select);
+      
+      let dateTimeDisplay = L.asap;
+      if (selectedDateTime) {
+        const date = new Date(selectedDateTime);
+        const options = { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric', 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        };
+        dateTimeDisplay = date.toLocaleString(lang, options);
+      }
+      
+      summary.innerHTML=`<strong>${L.when}:</strong> ${dateTimeDisplay}<br><strong>${L.from}:</strong> ${state.pickup.name}<br><strong>${L.to}:</strong> ${state.drop.name}`;
+      formCard.classList.add('hidden');
+      succ.classList.remove('hidden');
+    });
+    
+    $('edit-btn').onclick=()=>{
+      succ.classList.add('hidden');
+      formCard.classList.remove('hidden');
+    };
+    
+    $('new-btn').onclick=()=>{
+      form.reset();
+      pList.innerHTML=dList.innerHTML='';
+      Object.values(state.markers).forEach(m=>m&&map.removeLayer(m));
+      if(state.route) map.removeLayer(state.route);
+      Object.assign(state,{
+        pickup:null,
+        drop:null,
+        markers:{},
+        route:null
+      });
+      selectedDateTime = null;
+      $('calendar-btn').textContent = translations[lang].selectDateTime;
+      map.setView([35.2649,33.177],9);
+      succ.classList.add('hidden');
+      formCard.classList.remove('hidden');
+    };
+    
+    // Update UI text based on language selection
+    $('lang').addEventListener('change', function() {
+      lang = this.value;
+      $('current-location-btn').textContent = translations[lang].currentLocation;
+      $('clear-markers-btn').textContent = translations[lang].clearMarkers;
+      document.querySelectorAll('.lazy-type-badge').forEach(el => {
+        el.textContent = translations[lang].lazyTypeBadge;
+      });
+      $('calendar-btn').textContent = translations[lang].selectDateTime;
+    });
   </script>
 </body>
 </html>
