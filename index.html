@@ -265,8 +265,8 @@
     /* ---- map ---- */
     // Focus on Northern Cyprus with appropriate bounds
     const northernCyprusBounds = L.latLngBounds(
-      L.latLng(34.9, 32.0), // SW corner
-      L.latLng(35.9, 34.9)  // NE corner
+      L.latLng(34.4, 32.2),   // SW corner
+      L.latLng(35.9, 34.95)   // NE corner
     );
     
     const map=L.map('map', {
@@ -299,7 +299,8 @@
       pickup:null,
       drop:null,
       markers:{},
-      route:null
+      route:null,
+      distance: 0
     };
 
     /* ---- Update all text elements when language changes ---- */
@@ -430,6 +431,7 @@
         
         if(data.routes && data.routes.length){
           const route = data.routes[0];
+          state.distance = route.distance / 1000;
           state.route = L.geoJSON({
             type: 'Feature',
             properties: {},
@@ -562,32 +564,42 @@
     const form=$('booking-form'),formCard=$('form-card'),succ=$('success-card'),summary=$('summary');
     $('book-btn').textContent='Book Now';
     
-    form.addEventListener('submit',e=>{
+    form.addEventListener('submit', e => {
       e.preventDefault();
-      const name=$('name').value.trim(),
-            phone=$('phone').value.trim();
-      const L=translations[lang];
-      
-      if(!name||!phone) return alert(L.fill);
-      if(!state.pickup||!state.drop) return alert(L.select);
-      
+
+      const name  = $('name').value.trim();
+      const phone = $('phone').value.trim();
+      const L     = translations[lang];
+
+      if (!name || !phone)           return alert(L.fill);
+      if (!state.pickup || !state.drop) return alert(L.select);
+
+      // ---- WHEN ----
       let dateTimeDisplay = L.asap;
       if (selectedDateTime) {
-        const date = new Date(selectedDateTime);
-        const options = { 
-          year: 'numeric', 
-          month: 'short', 
-          day: 'numeric', 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        };
-        dateTimeDisplay = date.toLocaleString(lang, options);
+        dateTimeDisplay = new Date(selectedDateTime).toLocaleString(lang, {
+          year: 'numeric', month: 'short', day: 'numeric',
+          hour: '2-digit', minute: '2-digit', hour12: false
+        });
       }
-      
-      summary.innerHTML=`<strong>${L.when}:</strong> ${dateTimeDisplay}<br><strong>${L.from}:</strong> ${state.pickup.name}<br><strong>${L.to}:</strong> ${state.drop.name}`;
+
+      // ---- DISTANCE & PRICE ----
+      const distanceKm = state.distance.toFixed(1);
+      const price      = (state.distance * 0.9).toFixed(2);
+
+      // ---- SUMMARY ----
+      summary.innerHTML = `
+        <strong>${L.when}:</strong> ${dateTimeDisplay}<br>
+        <strong>${L.from}:</strong> ${state.pickup.name}<br>
+        <strong>${L.to}:</strong> ${state.drop.name}<br>
+        <strong>Distance:</strong> ${distanceKm}&nbsp;km<br>
+        <strong>Cost:</strong> €${price}
+      `;
+
       formCard.classList.add('hidden');
       succ.classList.remove('hidden');
     });
+
     
     $('edit-btn').onclick=()=>{
       succ.classList.add('hidden');
@@ -603,7 +615,8 @@
         pickup:null,
         drop:null,
         markers:{},
-        route:null
+        route:null,
+        distance: 0
       });
       selectedDateTime = null;
       $('calendar-btn').textContent = translations[lang].selectDateTime;
