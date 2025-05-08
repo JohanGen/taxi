@@ -512,51 +512,60 @@
       map.setView([35.2649, 33.177], 9);
     });
 
-/* ---- calendar button (mobile‑safe) ---- */
+/* ---- calendar button (mobile proof) ---- */
     $('calendar-btn').addEventListener('click', () => {
-      const picker = document.createElement('input');
-      picker.type = 'datetime-local';
 
-      /* ① keep it in viewport, zero‑sized & transparent  */
-      picker.style.position = 'fixed';   // stays relative to viewport
-      picker.style.left     = 0;
-      picker.style.top      = 0;
-      picker.style.width    = 0;
-      picker.style.height   = 0;
-      picker.style.opacity  = 0;
-      picker.style.zIndex   = 2147483647;  // above everything
+    /*  create an invisible (but tappable!) control  */
+    const picker = document.createElement('input');
+    picker.type = 'datetime-local';
 
-      /* ② min = now */
-      picker.min = new Date().toISOString().slice(0, 16); // "YYYY‑MM‑DDTHH:MM"
-
-      document.body.appendChild(picker);
-
-      /* ③ open the system picker */
-      if (picker.showPicker) {
-        picker.showPicker();        // Chrome / Edge / Android
-      } else {
-        picker.focus();             // Safari / iOS needs focus
-        picker.click();             // fallback
-      }
-
-      /* ④ handle selection */
-      picker.addEventListener('change', () => {
-        selectedDateTime = picker.value;                // ISO string
-        const date = new Date(selectedDateTime);
-
-        $('calendar-display').textContent = date.toLocaleString(lang, {
-          year:'numeric', month:'short', day:'numeric',
-          hour:'2-digit', minute:'2-digit', hour12:false
-        });
-
-        picker.remove();
-      });
-
-      /* ⑤ clean‑up if user dismissed */
-      picker.addEventListener('blur', () => {
-        if (!selectedDateTime) picker.remove();
-      });
+    // keep it in the viewport and >0px so the tap is “real”
+    Object.assign(picker.style, {
+      position : 'fixed',
+      top      : 0,
+      left     : 0,
+      width    : '1px',
+      height   : '1px',
+      opacity  : 0,           // invisible, but still clickable
+      zIndex   : 2147483647   // above everything
     });
+
+    // minimum selectable moment = now
+    picker.min = new Date().toISOString().slice(0, 16);
+
+    document.body.appendChild(picker);
+
+    /* open the native picker – different engines need different calls */
+    if (picker.showPicker) {          // Chrome / Android / Edge
+      picker.showPicker();
+    } else {                          // iOS / older Safari
+      picker.focus();                 // MUST come first on iOS
+      picker.click();                 // triggers UIDatePicker
+    }
+
+    /* user chose a value */
+    picker.addEventListener('change', () => {
+      selectedDateTime = picker.value;          // ISO string
+      const date = new Date(selectedDateTime);
+
+      $('calendar-display').textContent = date.toLocaleString(lang, {
+        year   : 'numeric',
+        month  : 'short',
+        day    : 'numeric',
+        hour   : '2-digit',
+        minute : '2-digit',
+        hour12 : false
+      });
+
+      picker.remove();                 // cleanup
+    });
+
+    /* user dismissed without picking */
+    picker.addEventListener('blur', () => {
+      if (!selectedDateTime) picker.remove();
+    });
+    });
+
 
 
 
