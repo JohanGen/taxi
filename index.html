@@ -31,6 +31,14 @@
     .btn-group{display:flex;gap:.5rem}
     .btn-secondary,.btn-error{flex:1;border:none;border-radius:.5rem;padding:.6rem;font-weight:600;color:#000;background:var(--gold-1);cursor:pointer}
     .btn-error{background:#dc2626;color:#fff}
+    .calendar-display{
+  margin-top:.35rem;
+  font-size:.9rem;
+  text-align:center;
+  color:#ddd;  /* change if you prefer another colour */
+}
+
+    
     
     /* Improved autocomplete styling */
     .autocomplete-container {
@@ -141,12 +149,16 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
         </svg>
-        Select Date & Time
+        Select Date & Time
       </button>
 
+      <!-- NEW: shows the chosen value -->
+      <div id="calendar-display" class="calendar-display"></div>
+
       <button id="book-btn" type="submit">Book Now</button>
-    </form>
-  </div>
+      </form>
+      </div> 
+
 
   <!-- ========= SUCCESS CARD ========= -->
   <div class="card hidden" id="success-card">
@@ -528,7 +540,7 @@
       picker.addEventListener('change', () => {
         selectedDateTime = picker.value;                       // ISO string
         const date = new Date(selectedDateTime);
-        $('calendar-label').textContent = date.toLocaleString(lang,{
+        $('calendar-display').textContent = date.toLocaleString(lang,{
           year:'numeric', month:'short', day:'numeric',
           hour:'2-digit', minute:'2-digit'
         });
@@ -591,6 +603,7 @@
       });
       selectedDateTime = null;
       $('calendar-btn').textContent = translations[lang].selectDateTime;
+      $('calendar-display').textContent = '';          
       map.setView([35.2649,33.177],9);
       succ.classList.add('hidden');
       formCard.classList.remove('hidden');
